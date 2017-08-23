@@ -1,6 +1,6 @@
 
 from card_matching import should_quit, is_invalid, has_matched,\
-    is_overlapping, has_won
+    is_overlapping, has_won, flip_card
 
 class FakeUI(object):
     def write(self, text):
@@ -20,19 +20,58 @@ def test_is_valid():
     return result == False
 
 def test_is_invalid():
-    board_list = ('0', '1')
+    board_list = (0, 1)
     result = is_invalid('t', board_list)
     return result == True
 
 def test_has_matched():
-    board_list = ('a', 'a')
-    result = has_matched('0', '1', board_list)
+    state = {
+        'board': ['_', '_', '_', '_'],
+        'len_board': ['0', '1', '2', '3'],
+        'key': ['a', 'a', 'b', 'b'],
+        'matches': 0,
+    }
+    result = has_matched(0, 1, state)
     return result == True
 
 def test_has_not_matched():
-    board_list = ('a', 'b')
-    result = has_matched('0', '1', board_list)
+    state = {
+        'board': ['_', '_', '_', '_'],
+        'len_board': ['0', '1', '2', '3'],
+        'key': ['a', 'a', 'b', 'b'],
+        'matches': 0,
+    }
+    result = has_matched(0, 2, state)
     return result == False
+
+def test_flip_card():
+    first = 0
+    second = 1
+    state = {
+        'board': ['_', '_', '_', '_'],
+        'len_board': ['0', '1', '2', '3'],
+        'key': ['a', 'a', 'b', 'b'],
+        'matches': 0,
+    }
+    flip_card(first, second, state)
+    good_board = ['a', 'a', '_', '_']
+    matches = 1
+    return state['board'] == good_board, state['matches'] == matches
+
+def test_not_flip():
+    first = 0
+    second = 2
+    state = {
+        'board': ['_', '_', '_', '_'],
+        'len_board': ['0', '1', '2', '3'],
+        'key': ['a', 'a', 'b', 'b'],
+        'matches': 0,
+    }
+    flip_card(first, second, state)
+    good_board = ['_', '_', '_', '_']
+    matches = 0
+    return state['board'] == good_board, state['matches'] == matches
+
 
 def test_is_overlapping():
     board_list = ('a', '_')
@@ -75,6 +114,12 @@ def main():
 
     if not test_has_not_matched():
         print 'Has_matched detected a match when there was none.'
+
+    if not test_flip_card():
+        print 'Flip_card did not flip card when it should have.'
+
+    if not test_not_flip():
+        print 'Flip_card flipped a card when it should not have.'
 
     if not test_is_overlapping():
         print 'Is_overlapping did not detect the overlapping.'

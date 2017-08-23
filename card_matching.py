@@ -10,39 +10,27 @@ def is_invalid(char, len_board):
     return False
 
 def is_overlapping(char_index, board):
-    if board[int(char_index)] != '_':
+    if board[char_index] != '_':
         return True
     return False
 
 def has_matched(st, nd, state):
-    if state['key'][int(st)] == state['key'][int(nd)]:
+    if st == nd:
+        return False
+    if state['key'][st] == state['key'][nd]:
         return True
     return False
+
+def flip_card(first, second, state):
+        state['board'][first] = state['key'][first]
+        state['board'][second] = state['key'][second]
+        state['matches'] += 1
 
 def has_won(board_list):
     for i in range(len(board_list)):
         if board_list[i] == '_':
             return False
     return True
-    
-
-def end_game_turn(first, second, state, ui):
-
-    if has_matched(first, second, state):
-        if first == second:
-            ui.write('That one has aready been picked.')
-        state['board'][int(first)] = state['key'][int(first)]
-        state['board'][int(second)] = state['key'][int(second)]
-        state['matches'] += 1
-        ui.write('You have this many matches: ' + str(state['matches']))
-        ui.write(state['board'])
-    else:
-        ui.write('That was not a match sadly.')
-
-    if has_won(state['board']):
-        ui.write('You have won.')
-        return True
-    return False
 
 class ShellUI(object):
     def read(self):
@@ -50,7 +38,6 @@ class ShellUI(object):
 
     def write(self, text):
         print text
-
 
 class CardMatchingGame(object):
     def turn(self):
@@ -61,14 +48,13 @@ class CardMatchingGame(object):
         first_raw = self.ui.read()
 
         if should_quit(first_raw):
-            self.ui.write('You quit.')
             return True
 
         if is_invalid(first_raw, self.state['len_board']):
             self.ui.write('That is a invalid charater.')
             return False
 
-        if is_overlapping(first_raw, self.state['board']):
+        if is_overlapping(int(first_raw), self.state['board']):
             self.ui.write('Someone is already there.')
             return False
 
@@ -79,20 +65,26 @@ class CardMatchingGame(object):
         second_raw = self.ui.read()
 
         if should_quit(second_raw):
-            self.ui.write('You quit.')
             return True
 
         if is_invalid(second_raw, self.state['len_board']):
             self.ui.write('Now, we go back to the beginning.')
             return False
 
-        if is_overlapping(second_raw, self.state['board']):
+        if is_overlapping(int(second_raw), self.state['board']):
             self.ui.write('Someone is already there.')
             return False
 
-        if end_game_turn(first_raw, second_raw, self.state, self.ui):
-            return True
+        if has_matched(int(first_raw), int(second_raw), self.state):
+            flip_card(int(first_raw), int(second_raw), self.state)
+            self.ui.write('Matches: ' + str(self.state['matches']))
+            self.ui.write(self.state['board'])
+        else:
+            self.ui.write('That was not a match sadly.')
 
+        if has_won(self.state['board']):
+            self.ui.write('You have won.')
+            return True
         return False
 
 def main():
